@@ -1,0 +1,50 @@
+[
+  {
+    "name": "FfjugE",
+    "path": "packages/extensions/configs/FfjugE",
+    "sha": "9ddcaf555196af75fd05fcd44f1d98e0fa0b3a3f",
+    "size": 0,
+    "url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/FfjugE?ref=main",
+    "html_url": "https://github.com/serranolabs-io/bookera-extension-hub/tree/main/packages/extensions/configs/FfjugE",
+    "git_url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/trees/9ddcaf555196af75fd05fcd44f1d98e0fa0b3a3f",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/FfjugE?ref=main",
+      "git": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/trees/9ddcaf555196af75fd05fcd44f1d98e0fa0b3a3f",
+      "html": "https://github.com/serranolabs-io/bookera-extension-hub/tree/main/packages/extensions/configs/FfjugE"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "packages/extensions/configs/README.md",
+    "sha": "52e5937d2318a1955af9c48cb4b9ad80ed6b2120",
+    "size": 7,
+    "url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/README.md?ref=main",
+    "html_url": "https://github.com/serranolabs-io/bookera-extension-hub/blob/main/packages/extensions/configs/README.md",
+    "git_url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/blobs/52e5937d2318a1955af9c48cb4b9ad80ed6b2120",
+    "download_url": "https://raw.githubusercontent.com/serranolabs-io/bookera-extension-hub/main/packages/extensions/configs/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/README.md?ref=main",
+      "git": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/blobs/52e5937d2318a1955af9c48cb4b9ad80ed6b2120",
+      "html": "https://github.com/serranolabs-io/bookera-extension-hub/blob/main/packages/extensions/configs/README.md"
+    }
+  },
+  {
+    "name": "WFodzb",
+    "path": "packages/extensions/configs/WFodzb",
+    "sha": "3a1852b30e7a41c96503d74147a0ed938cd3cf30",
+    "size": 0,
+    "url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/WFodzb?ref=main",
+    "html_url": "https://github.com/serranolabs-io/bookera-extension-hub/tree/main/packages/extensions/configs/WFodzb",
+    "git_url": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/trees/3a1852b30e7a41c96503d74147a0ed938cd3cf30",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/contents/packages/extensions/configs/WFodzb?ref=main",
+      "git": "https://api.github.com/repos/serranolabs-io/bookera-extension-hub/git/trees/3a1852b30e7a41c96503d74147a0ed938cd3cf30",
+      "html": "https://github.com/serranolabs-io/bookera-extension-hub/tree/main/packages/extensions/configs/WFodzb"
+    }
+  }
+]

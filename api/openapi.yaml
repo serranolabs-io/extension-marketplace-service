@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  description: API to submit and publish an ExtensionConfig object
+  title: Extension Config API
+  version: 1.0.0
+servers:
+- description: Development server
+  url: http://localhost:8080
+- description: Production server
+  url: https://backend.net
+paths:
+  /api/extensions:
+    get:
+      operationId: getAllExtensions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Extension'
+                type: array
+          description: Extensions successfully fetched
+        "500":
+          description: Server err
+      summary: Fetch all extension configs
+    post:
+      operationId: createExtension
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Extension'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createExtension_201_response'
+          description: Extension successfully created
+        "400":
+          description: Invalid request body
+        "500":
+          description: Server error
+      summary: Submit a new extension config
+components:
+  schemas:
+    Extension:
+      example:
+        packageJson: packageJson
+        name: name
+        id: 0.8008281904610115
+        userName: userName
+        userId: userId
+        config: config
+      properties:
+        userName:
+          type: string
+        userId:
+          type: string
+        name:
+          description: "this is a unique name of the package. On extension config,\
+            \ it is set to kebab-case of user's set name"
+          type: string
+        config:
+          type: string
+        packageJson:
+          type: string
+        id:
+          type: number
+      required:
+      - config
+      - name
+      - packageJson
+      - userId
+      - userName
+      type: object
+    createExtension_201_response:
+      example:
+        success: true
+        id: id
+      properties:
+        success:
+          type: boolean
+        id:
+          description: The ID of the created extension
+          type: string
+      type: object

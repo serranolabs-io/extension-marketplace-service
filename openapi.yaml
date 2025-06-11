@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Extension Config API
+  version: 1.0.0
+  description: API to submit and publish an ExtensionConfig object
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://backend.net
+    description: Production server
+
+paths:
+  /api/extensions:
+    post:
+      summary: Submit a new extension config
+      operationId: createExtension
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Extension'
+      responses:
+        '201':
+          description: Extension successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                    description: The ID of the created extension
+        '400':
+          description: Invalid request body
+        '500':
+          description: Server error
+    get:
+      summary: Fetch all extension configs
+      operationId: getAllExtensions
+      responses:
+        '200':
+          description: Extensions successfully fetched
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Extension'
+        '500':
+          description: Server err
+
+components:
+  schemas:
+    Extension:
+      type: object
+      required:
+        - config
+        - packageJson
+        - name
+        - userName
+        - userId
+      properties:
+        userName:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+          description: this is a unique name of the package. On extension config, it is set to kebab-case of user's set name
+        config:
+          type: string
+        packageJson:
+          type: string
+        id:
+          type: number
