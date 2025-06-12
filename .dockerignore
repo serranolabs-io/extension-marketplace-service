@@ -1,0 +1,133 @@
+# flyctl launch added from .gitignore
+**/temp-repo
+**/deploy_key.pem
+**/.env
+
+# flyctl launch added from temp-repo/.gitignore
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+temp-repo/**/node_modules
+temp-repo/**/.pnp
+temp-repo/**/.pnp.js
+
+# Local env files
+temp-repo/**/.env
+temp-repo/**/.env.local
+temp-repo/**/.env.development.local
+temp-repo/**/.env.test.local
+temp-repo/**/.env.production.local
+
+# Testing
+temp-repo/**/coverage
+
+# Turbo
+temp-repo/**/.turbo
+
+# Vercel
+temp-repo/**/.vercel
+
+# Build Outputs
+temp-repo/**/.next
+temp-repo/**/out
+temp-repo/**/build
+temp-repo/**/dist
+
+
+# Debug
+temp-repo/**/npm-debug.log*
+temp-repo/**/yarn-debug.log*
+temp-repo/**/yarn-error.log*
+
+# Misc
+temp-repo/**/.DS_Store
+temp-repo/**/*.pem
+
+# flyctl launch added from temp-repo/packages/modules/keyboard-shortcuts/.gitignore
+# Logs
+temp-repo/packages/modules/keyboard-shortcuts/**/logs
+temp-repo/packages/modules/keyboard-shortcuts/**/*.log
+temp-repo/packages/modules/keyboard-shortcuts/**/npm-debug.log*
+temp-repo/packages/modules/keyboard-shortcuts/**/yarn-debug.log*
+temp-repo/packages/modules/keyboard-shortcuts/**/yarn-error.log*
+temp-repo/packages/modules/keyboard-shortcuts/**/pnpm-debug.log*
+temp-repo/packages/modules/keyboard-shortcuts/**/lerna-debug.log*
+
+temp-repo/packages/modules/keyboard-shortcuts/**/node_modules
+temp-repo/packages/modules/keyboard-shortcuts/**/dist
+temp-repo/packages/modules/keyboard-shortcuts/**/dist-ssr
+temp-repo/packages/modules/keyboard-shortcuts/**/*.local
+
+# Editor directories and files
+temp-repo/packages/modules/keyboard-shortcuts/**/.vscode/*
+!temp-repo/packages/modules/keyboard-shortcuts/**/.vscode/extensions.json
+temp-repo/packages/modules/keyboard-shortcuts/**/.idea
+temp-repo/packages/modules/keyboard-shortcuts/**/.DS_Store
+temp-repo/packages/modules/keyboard-shortcuts/**/*.suo
+temp-repo/packages/modules/keyboard-shortcuts/**/*.ntvs*
+temp-repo/packages/modules/keyboard-shortcuts/**/*.njsproj
+temp-repo/packages/modules/keyboard-shortcuts/**/*.sln
+temp-repo/packages/modules/keyboard-shortcuts/**/*.sw?
+
+# flyctl launch added from temp-repo/packages/modules/themes/.gitignore
+# Logs
+temp-repo/packages/modules/themes/**/logs
+temp-repo/packages/modules/themes/**/*.log
+temp-repo/packages/modules/themes/**/npm-debug.log*
+temp-repo/packages/modules/themes/**/yarn-debug.log*
+temp-repo/packages/modules/themes/**/yarn-error.log*
+temp-repo/packages/modules/themes/**/pnpm-debug.log*
+temp-repo/packages/modules/themes/**/lerna-debug.log*
+
+temp-repo/packages/modules/themes/**/node_modules
+temp-repo/packages/modules/themes/**/dist
+temp-repo/packages/modules/themes/**/dist-ssr
+temp-repo/packages/modules/themes/**/*.local
+
+# Editor directories and files
+temp-repo/packages/modules/themes/**/.vscode/*
+!temp-repo/packages/modules/themes/**/.vscode/extensions.json
+temp-repo/packages/modules/themes/**/.idea
+temp-repo/packages/modules/themes/**/.DS_Store
+temp-repo/packages/modules/themes/**/*.suo
+temp-repo/packages/modules/themes/**/*.ntvs*
+temp-repo/packages/modules/themes/**/*.njsproj
+temp-repo/packages/modules/themes/**/*.sln
+temp-repo/packages/modules/themes/**/*.sw?
+
+# flyctl launch added from temp-repo/packages/shared/.gitignore
+# dependencies (bun install)
+temp-repo/packages/shared/**/node_modules
+
+# output
+temp-repo/packages/shared/**/out
+temp-repo/packages/shared/**/dist
+temp-repo/packages/shared/**/*.tgz
+
+# code coverage
+temp-repo/packages/shared/**/coverage
+temp-repo/packages/shared/**/*.lcov
+
+# logs
+temp-repo/packages/shared/**/logs
+temp-repo/packages/shared/**/_.log
+temp-repo/packages/shared/**/report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+temp-repo/packages/shared/**/.env
+temp-repo/packages/shared/**/.env.development.local
+temp-repo/packages/shared/**/.env.test.local
+temp-repo/packages/shared/**/.env.production.local
+temp-repo/packages/shared/**/.env.local
+
+# caches
+temp-repo/packages/shared/**/.eslintcache
+temp-repo/packages/shared/**/.cache
+temp-repo/packages/shared/**/*.tsbuildinfo
+
+# IntelliJ based IDEs
+temp-repo/packages/shared/**/.idea
+
+# Finder (MacOS) folder config
+temp-repo/packages/shared/**/.DS_Store
+fly.toml

@@ -14,39 +14,67 @@ import (
 	// WARNING!
 	// Pass --git-repo-id and --git-user-id properties when generating the code
 	//
-	sw "github.com/GIT_USER_ID/GIT_REPO_ID/go"
-	"github.com/GIT_USER_ID/GIT_REPO_ID/shared"
+	"time"
+
+	"github.com/extension-marketplace-service/shared"
+
 	"github.com/charmbracelet/log"
+	openapi "github.com/extension-marketplace-service/go"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
+var env shared.Env = ""
+
+func getCors() cors.Config {
+
+	switch env {
+	case shared.PROD:
+		return cors.Config{
+			AllowOrigins:     []string{"*"},
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}
+	case shared.DEV:
+		return cors.Config{
+			AllowOrigins:     []string{"http://localhost:5003"},
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}
+	default:
+		return cors.Config{}
+	}
+}
+
+// NewRouter returns a new router.
+func NewRouter(handleFunctions openapi.ApiHandleFunctions) *gin.Engine {
+	engine := gin.Default()
+	engine.Use(cors.New(getCors()))
+
+	return openapi.NewRouterWithGinEngine(engine, handleFunctions)
+}
+
 func main() {
+	supabaseClient, envSetup := shared.Setup("")
+	env = envSetup
+	if env == shared.PROD {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	log.Printf("Server started")
 
-	supabaseClient, _ := shared.Setup()
-
-	routes := sw.ApiHandleFunctions{}
+	routes := openapi.ApiHandleFunctions{}
 	routes.DefaultAPI.SupabaseClient = supabaseClient
-	router := sw.NewRouter(routes)
+
+	router := NewRouter(routes)
+
 	log.Printf("Server running on port 8080")
-
-	/*
-		// NewRouter returns a new router.
-		func NewRouter(handleFunctions ApiHandleFunctions) *gin.Engine {
-
-			engine := gin.Default()
-			engine.Use(cors.New(cors.Config{
-				AllowOrigins:     []string{"http://localhost:5003"},
-				AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-				AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
-				ExposeHeaders:    []string{"Content-Length"},
-				AllowCredentials: true,
-				MaxAge:           12 * time.Hour,
-			}))
-			return NewRouterWithGinEngine(engine, handleFunctions)
-		}
-
-	*/
 
 	log.Fatal(router.Run(":8080"))
 }

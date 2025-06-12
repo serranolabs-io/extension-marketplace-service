@@ -1,16 +1,25 @@
-FROM golang:1.19 AS build
-WORKDIR /go/src
-COPY go ./go
-COPY main.go .
+FROM golang:1.23 AS build
+WORKDIR /app
+
 COPY go.sum .
 COPY go.mod .
 
+
+# Download dependencies
+RUN go mod download
+
+# Copy the entire project directory (including submodules and Go files)
+COPY . .
+
 ENV CGO_ENABLED=0
 
-RUN go build -o openapi .
+RUN go build -o /app/openapi .
+
 
 FROM scratch AS runtime
-ENV GIN_MODE=release
-COPY --from=build /go/src/openapi ./
-EXPOSE 8080/tcp
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build ./app/openapi .
+
+EXPOSE 8080
 ENTRYPOINT ["./openapi"]

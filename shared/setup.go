@@ -11,26 +11,44 @@ import (
 
 const APP_ENV = "APP_ENV"
 
-func setupEnv() string {
-	env := os.Getenv(APP_ENV)
+type Env string
 
-	if env == "development" {
+const (
+	PROD Env = "prod"
+	DEV  Env = "dev"
+)
+
+func SetupEnv() Env {
+	env := Env(os.Getenv(APP_ENV))
+
+	if env == DEV {
 		log.SetLevel(log.DebugLevel)
-	} else if env == "production" {
+	} else if env == PROD {
 		log.SetLevel(log.InfoLevel)
 	} else {
 		log.Info("Unknown log level set, setting development")
-		env = "development"
+		env = DEV
 		log.SetLevel(log.DebugLevel)
 	}
 
-	log.Info(fmt.Sprintf("Running in %s", env))
+	log.Info(fmt.Sprintf("We in %s baby", env))
 
 	return env
 }
 
-func initializeEnvFile() {
-	err := godotenv.Load("../.env")
+func initializeEnvFile(filePath string) {
+	if SetupEnv() == "prod" {
+		log.Debug("Loading variables via docker container")
+		return
+	}
+
+	var err error
+	if filePath == "" {
+		err = godotenv.Load(".env")
+	} else {
+		err = godotenv.Load(filePath)
+	}
+
 	// Load environment variables from .env file
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
@@ -51,9 +69,9 @@ func initializeSupabase() *supabase.Client {
 	return supabaseClient
 }
 
-func Setup() (*supabase.Client, string) {
-	env := setupEnv()
-	initializeEnvFile()
+func Setup(filePath string) (*supabase.Client, Env) {
+	env := SetupEnv()
+	initializeEnvFile(filePath)
 	supabaseClient := initializeSupabase()
 
 	return supabaseClient, env

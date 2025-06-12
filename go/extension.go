@@ -10,6 +10,7 @@
 package openapi
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/extension-marketplace-service/shared"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -71,6 +73,14 @@ func (e *Extension) createDirectory(repo *git.Repository, repoPath string, workt
 	return newConfigDir
 }
 
+func getPemFromEnv() []byte {
+	b64 := os.Getenv("PEM_KEY")
+
+	str, _ := base64.StdEncoding.DecodeString(b64)
+
+	return str
+}
+
 func (e *Extension) createExtension() {
 	if e.Config == "" {
 		log.Info("Error: Config is empty")
@@ -79,9 +89,16 @@ func (e *Extension) createExtension() {
 
 	// Clone the repository
 	repoPath := "./temp-repo"
-	sshKey, err := os.ReadFile(DEPLOY_KEY_PATH)
-	if err != nil {
-		log.Fatalf("Failed to read deploy key file: %v", err)
+
+	var sshKey []byte
+	var err error
+	if shared.SetupEnv() == shared.DEV {
+		sshKey, err = os.ReadFile(DEPLOY_KEY_PATH)
+		if err != nil {
+			log.Fatalf("Failed to read deploy key file: %v", err)
+		}
+	} else {
+		sshKey = getPemFromEnv()
 	}
 
 	// os.Setenv("SSH_KNOWN_HOSTS", SSH_KNOWN_HOSTS_PATH)
