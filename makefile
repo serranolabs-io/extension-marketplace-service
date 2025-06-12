@@ -12,12 +12,11 @@ both:
 run-docker:
 	docker run -p 8080:8080 --env-file .env -e APP_ENV=prod extension-marketplace-service
 
-
 build-docker:
 	docker build -t extension-marketplace-service .
 
 build-run-docker:
 	make build-docker && make run-docker
 
-fly-deploy:
-	cat fly.toml.template >> fly.toml && cat .env >> fly.toml && fly deploy
+# fly-deploy:
+	# cat fly.toml.template >> fly.toml && cat .env >> fly.toml && fly deploy
