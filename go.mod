@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/charmbracelet/log v0.4.2
 	github.com/gin-contrib/cors v1.7.5
-	github.com/gin-gonic/gin v1.10.0
+	github.com/gin-gonic/gin v1.10.1
 	github.com/go-git/go-git/v5 v5.16.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1

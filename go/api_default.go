@@ -10,6 +10,9 @@
 package openapi
 
 import (
+	"fmt"
+
+	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
 	"github.com/supabase-community/supabase-go"
 )
@@ -31,10 +34,68 @@ func (api *DefaultAPI) CreateExtension(c *gin.Context) {
 
 	extension.createExtension()
 
+	log.Info("")
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK", "extension": extension})
 }
 
 func (api *DefaultAPI) GetAllExtensions(c *gin.Context) {
-	c.JSON(200, getAllExtensions(api.SupabaseClient))
+	isPublished := c.Query("isPublished")
+	filterByUserId := c.Query("filterByUserId")
+	userId := c.Query("userId")
+	isDownloaded := c.Query("isDownloaded")
+
+	isPublishedBool := false
+	if isPublished == "true" {
+		isPublishedBool = true
+	}
+
+	isDownloadedBool := false
+	if isDownloaded == "true" {
+		isDownloadedBool = true
+	}
+
+	isDownloadedSet := false
+	if isDownloaded != "" {
+		isDownloadedSet = true
+	}
+
+	log.Info(isPublished, userId, filterByUserId)
+	c.JSON(200, getAllExtensions(api.SupabaseClient, GetAllExtensionsOptions{
+		IsPublished:     isPublishedBool,
+		UserId:          userId,
+		filterByUserId:  filterByUserId,
+		isDownloaded:    isDownloadedBool,
+		isDownloadedSet: isDownloadedSet,
+	}))
+}
+
+// ! not implemented
+func (api *DefaultAPI) UpdateUserExtension(c *gin.Context) {
+	// userId := c.Query("user_id")
+	// configId := c.Query("config_id")
+
+	// c.JSON(200, getAllExtensions(api.SupabaseClient))
+}
+
+func (api *DefaultAPI) UpdateUserExtensionImage(c *gin.Context) {
+	configId := c.Param("config_id")
+	log.Info(fmt.Sprintf("updating image for %s", configId))
+
+	// Read the binary image data from the request body
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Failed to read image file"})
+		return
+	}
+	defer file.Close()
+
+	// // Process the image file (e.g., save it or upload it to a storage service)
+	updateUserExtensionImage(api.SupabaseClient, configId, file, header)
+	// if err != nil {
+	// 	c.JSON(500, gin.H{"error": "Failed to update extension image"})
+	// 	return
+	// }
+
+	c.JSON(200, gin.H{"status": "OK"})
 }

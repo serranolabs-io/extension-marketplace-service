@@ -1,6 +1,4 @@
-Dockerfile
 api/openapi.yaml
-go.mod
 go/README.md
 go/model_create_extension_201_response.go
 go/model_extension.go

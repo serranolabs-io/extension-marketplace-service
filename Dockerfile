@@ -15,11 +15,12 @@ ENV CGO_ENABLED=0
 
 RUN go build -o /app/openapi .
 
-
 FROM scratch AS runtime
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build ./app/openapi .
+COPY known_hosts root/.ssh/known_hosts
+
 
 EXPOSE 8080
 ENTRYPOINT ["./openapi"]

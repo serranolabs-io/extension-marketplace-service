@@ -41,6 +41,31 @@ paths:
     get:
       summary: Fetch all extension configs
       operationId: getAllExtensions
+      parameters:
+        - name: isPublished
+          in: query
+          required: true
+          schema:
+            type: boolean
+          description: Filter extensions by their published status
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: currently logged in user Id
+        - name: isDownloaded
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: is the extension downloaded
+        - name: filterByUserId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter extensions by their user
       responses:
         '200':
           description: Extensions successfully fetched
@@ -52,6 +77,51 @@ paths:
                   $ref: '#/components/schemas/Extension'
         '500':
           description: Server err
+  /api/extensions/{config_id}:
+    put:
+      summary: Update a user's extension
+      operationId: updateUserExtension
+      parameters:
+        - name: config_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the extension config
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Extension'
+      responses:
+        '200':
+          description: Succesfully updated extension config
+  /api/extensions/{config_id}/image:
+    put:
+      summary: Update a user's extension image
+      operationId: updateUserExtensionImage
+      parameters:
+        - name: config_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the extension config
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The image file to upload
+      responses:
+        '200':
+          description: Succesfully updated extension config image
 
 components:
   schemas:
@@ -64,10 +134,14 @@ components:
         - userName
         - userId
       properties:
+        isDownloaded:
+          type: boolean
         userName:
           type: string
         userId:
           type: string
+        hasIcon:
+          type: boolean
         name:
           type: string
           description: this is a unique name of the package. On extension config, it is set to kebab-case of user's set name
@@ -77,3 +151,5 @@ components:
           type: string
         id:
           type: number
+        isPublished:
+          type: boolean

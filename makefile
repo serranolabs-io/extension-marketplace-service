@@ -18,5 +18,10 @@ build-docker:
 build-run-docker:
 	make build-docker && make run-docker
 
-# fly-deploy:
-	# cat fly.toml.template >> fly.toml && cat .env >> fly.toml && fly deploy
+fly-deploy:
+	fly deploy
+
+	cat fly.toml.template >> fly.toml && cat .env >> fly.toml && fly deploy
+
+run-dev:
+	APP_ENV=dev go run . 

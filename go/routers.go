@@ -18,13 +18,18 @@ import (
 // Route is the information for every URI.
 type Route struct {
 	// Name is the name of this Route.
-	Name string
+	Name		string
 	// Method is the string for the HTTP method. ex) GET, POST etc..
-	Method string
+	Method		string
 	// Pattern is the pattern of the URI.
-	Pattern string
+	Pattern	 	string
 	// HandlerFunc is the handler function of this route.
-	HandlerFunc gin.HandlerFunc
+	HandlerFunc	gin.HandlerFunc
+}
+
+// NewRouter returns a new router.
+func NewRouter(handleFunctions ApiHandleFunctions) *gin.Engine {
+	return NewRouterWithGinEngine(gin.Default(), handleFunctions)
 }
 
 // NewRouter add routes to existing gin engine.
@@ -62,7 +67,7 @@ type ApiHandleFunctions struct {
 }
 
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
-	return []Route{
+	return []Route{ 
 		{
 			"CreateExtension",
 			http.MethodPost,
@@ -74,6 +79,18 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodGet,
 			"/api/extensions",
 			handleFunctions.DefaultAPI.GetAllExtensions,
+		},
+		{
+			"UpdateUserExtension",
+			http.MethodPut,
+			"/api/extensions/:config_id",
+			handleFunctions.DefaultAPI.UpdateUserExtension,
+		},
+		{
+			"UpdateUserExtensionImage",
+			http.MethodPut,
+			"/api/extensions/:config_id/image",
+			handleFunctions.DefaultAPI.UpdateUserExtensionImage,
 		},
 	}
 }

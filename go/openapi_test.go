@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/supabase-community/supabase-go"
 )
@@ -56,6 +57,18 @@ func TestGetAllExtensions(t *testing.T) {
 	initializeEnvVariables()
 	initializeSupabase()
 	supabaseClient := initializeSupabase()
+	userID := uuid.New().String()
 
-	getAllExtensions(supabaseClient)
+	result := supabaseClient.Rpc("getallextensionsjoindownloaded", "", map[string]interface{}{
+		"logged_user_id": userID,
+	})
+
+	fmt.Println(result)
+
+	getAllExtensionsOptions := GetAllExtensionsOptions{
+		IsPublished: true,
+		UserId:      "98987",
+	}
+
+	getAllExtensions(supabaseClient, getAllExtensionsOptions)
 }

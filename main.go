@@ -29,7 +29,7 @@ var env shared.Env = ""
 func getCors() cors.Config {
 
 	switch env {
-	case shared.PROD:
+	case shared.PROD, shared.STAGE:
 		return cors.Config{
 			AllowOrigins:     []string{"*"},
 			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},

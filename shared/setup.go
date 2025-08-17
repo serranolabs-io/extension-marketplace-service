@@ -14,14 +14,15 @@ const APP_ENV = "APP_ENV"
 type Env string
 
 const (
-	PROD Env = "prod"
-	DEV  Env = "dev"
+	PROD  Env = "prod"
+	STAGE Env = "stage"
+	DEV   Env = "dev"
 )
 
 func SetupEnv() Env {
 	env := Env(os.Getenv(APP_ENV))
 
-	if env == DEV {
+	if env == DEV || env == STAGE {
 		log.SetLevel(log.DebugLevel)
 	} else if env == PROD {
 		log.SetLevel(log.InfoLevel)
@@ -37,7 +38,8 @@ func SetupEnv() Env {
 }
 
 func initializeEnvFile(filePath string) {
-	if SetupEnv() == "prod" {
+	env := SetupEnv()
+	if env == "prod" || env == "stage" {
 		log.Debug("Loading variables via docker container")
 		return
 	}

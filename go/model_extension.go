@@ -11,9 +11,13 @@ package openapi
 
 type Extension struct {
 
+	IsDownloaded bool `json:"isDownloaded,omitempty"`
+
 	UserName string `json:"userName"`
 
 	UserId string `json:"userId"`
+
+	HasIcon bool `json:"hasIcon,omitempty"`
 
 	// this is a unique name of the package. On extension config, it is set to kebab-case of user's set name
 	Name string `json:"name"`
@@ -23,4 +27,6 @@ type Extension struct {
 	PackageJson string `json:"packageJson"`
 
 	Id float32 `json:"id,omitempty"`
+
+	IsPublished bool `json:"isPublished,omitempty"`
 }

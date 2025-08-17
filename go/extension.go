@@ -10,20 +10,18 @@
 package openapi
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
-	"time"
+	"path/filepath"
 
 	"github.com/charmbracelet/log"
-	"github.com/extension-marketplace-service/shared"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/uuid"
 	"github.com/supabase-community/supabase-go"
 )
@@ -73,120 +71,17 @@ func (e *Extension) createDirectory(repo *git.Repository, repoPath string, workt
 	return newConfigDir
 }
 
-func getPemFromEnv() []byte {
-	b64 := os.Getenv("PEM_KEY")
-
-	str, _ := base64.StdEncoding.DecodeString(b64)
-
-	return str
-}
-
 func (e *Extension) createExtension() {
-	if e.Config == "" {
-		log.Info("Error: Config is empty")
-		return
-	}
-
-	// Clone the repository
-	repoPath := "./temp-repo"
-
-	var sshKey []byte
-	var err error
-	if shared.SetupEnv() == shared.DEV {
-		sshKey, err = os.ReadFile(DEPLOY_KEY_PATH)
-		if err != nil {
-			log.Fatalf("Failed to read deploy key file: %v", err)
-		}
-	} else {
-		sshKey = getPemFromEnv()
-	}
-
-	// os.Setenv("SSH_KNOWN_HOSTS", SSH_KNOWN_HOSTS_PATH)
-
-	publicKeys, err := ssh.NewPublicKeys("git", sshKey, "")
-
-	if err != nil {
-		log.Fatalf("Failed to create public keys from private key: %v", err)
-	}
-
-	publicKeys.HostKeyCallback, err = ssh.NewKnownHostsCallback()
-	if err != nil {
-		log.Fatalf("Failed to create public keys from private key: %v", err)
-	}
-
-	repo, err := git.PlainClone(repoPath, false, &git.CloneOptions{
-		URL:      "git@github.com:serranolabs-io/bookera-extension-hub.git",
-		Auth:     publicKeys,
-		Progress: os.Stdout,
-	})
-	if err != nil {
-		if err == git.ErrRepositoryAlreadyExists {
-			log.Info("Repository already exists, proceeding with existing repository")
-			repo, err = git.PlainOpen(repoPath)
-			if err != nil {
-				log.Fatalf("Failed to open existing repository: %v", err)
-			}
-		} else {
-			log.Fatalf("Failed to clone repository: %v", err)
-		}
-	}
-
-	// Create a new file with the extension config
-
-	// Add the file to the repository
-	worktree, err := repo.Worktree()
-	if err != nil {
-		log.Fatalf("Failed to get worktree: %v", err)
-	}
+	repo, worktree, publicKeys, repoPath := initGitRepo()
 
 	newConfigFile := e.createDirectory(repo, repoPath, worktree)
-
 	configFile := path.Join(newConfigFile, CONFIG_JSON)
 	e.createFile(configFile, e.Config, repoPath, worktree)
 	packageJson := path.Join(newConfigFile, PACKAGE_JSON)
 	e.createFile(packageJson, e.PackageJson, repoPath, worktree)
 
 	msg := fmt.Sprintf("Extension config '%s' for user '%s' created", e.Name, e.UserId)
-	// Commit the changes
-	_, err = worktree.Commit(msg, &git.CommitOptions{
-		Author: &object.Signature{
-			Name:  "Updated config",
-			Email: "daviddserranodev@gmail.cm",
-			When:  time.Now(),
-		},
-	})
-	if err != nil {
-		log.Fatalf("Failed to commit changes: %v", err)
-	}
-
-	// Push the changes to the remote repository
-	err = repo.Push(&git.PushOptions{
-		Auth: publicKeys,
-	})
-	if err != nil {
-		if err.Error() == "non-fast-forward update: refs/heads/main" {
-			log.Warn("Non-fast-forward update detected, changes not pushed")
-			err = repo.Fetch(&git.FetchOptions{
-				Auth: publicKeys,
-			})
-			if err != nil {
-				log.Fatalf("Failed to fetch changes: %v", err)
-			}
-
-			err = repo.Push(&git.PushOptions{
-				Auth: publicKeys,
-			})
-
-			if err != nil {
-				log.Fatalf("Failed to push changes after rebase: %v", err)
-			}
-
-		} else {
-			log.Fatalf("Failed to push changes: %v", err)
-		}
-	}
-
-	log.Info(msg + " and pushed to repository")
+	commitChanges(msg, worktree, repo, publicKeys)
 }
 
 func readEndpoint(fileName string, getFullDirectory bool) string {
@@ -207,12 +102,12 @@ func readEndpoint(fileName string, getFullDirectory bool) string {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
+		log.Fatalf("Failed to make request %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Failed to fetch data, status code: %d", resp.StatusCode)
+		log.Fatalf("your database has a row that does not exist in github %v", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -230,10 +125,13 @@ func getFullDirectory() string {
 	return fmt.Sprintf("api.github.com/repos/serranolabs-io/bookera-extension-hub/contents%s", filePath)
 }
 
+func getUserDirectory(id string, userName string) string {
+	return fmt.Sprintf("/packages/extensions/configs/%s/%s", userName, id)
+}
+
 func getDirectory(id string, userName string) string {
-	filePath := fmt.Sprintf("/packages/extensions/configs/%s/%s", userName, id)
 	// filePath := ""
-	return fmt.Sprintf("raw.githubusercontent.com/serranolabs-io/bookera-extension-hub/main%s", filePath)
+	return fmt.Sprintf("raw.githubusercontent.com/serranolabs-io/bookera-extension-hub/main%s", getUserDirectory(id, userName))
 }
 
 const (
@@ -251,26 +149,69 @@ type ExtensionTable struct {
 	Name string `json:"name"`
 
 	// text type
+	HasIcon bool `json:"hasIcon"`
+
+	// text type
+	IsPublished bool `json:"isPublished"`
+
+	IsDownloaded bool `json:"isDownloaded"`
 }
 
-func getAllExtensions(supabaseClient *supabase.Client) []*Extension {
-	var extensionTables []ExtensionTable
-	data, _, err := supabaseClient.From(EXTENSION_TABLE).Select("*", "exact", false).Execute()
+type GetAllExtensionsOptions struct {
+	IsPublished     bool
+	UserId          string
+	filterByUserId  string
+	isDownloaded    bool
+	isDownloadedSet bool `json:"isDownloadedSet"`
+}
 
-	if err != nil {
-		log.Fatalf("Failed to fetch extensions: %v", err)
+func getAllExtensions(supabaseClient *supabase.Client, options GetAllExtensionsOptions) []*Extension {
+	var extensionTables []ExtensionTable
+
+	var result string
+	if options.filterByUserId == "" {
+		rpcParams := map[string]interface{}{
+			"is_published": options.IsPublished,
+		}
+
+		if options.UserId != "" {
+			rpcParams["logged_user_id"] = options.UserId
+		}
+
+		result = supabaseClient.Rpc("getallextensionsjoindownloaded", "", rpcParams)
+	} else {
+		rpcParams := map[string]interface{}{
+			"logged_user_id":    options.UserId,
+			"is_published":      options.IsPublished,
+			"filter_by_user_id": options.filterByUserId,
+		}
+
+		if options.UserId != "" {
+			rpcParams["logged_user_id"] = options.UserId
+		}
+		result = supabaseClient.Rpc("getallextensionsjoindownloaded", "", rpcParams)
 	}
 
-	err = json.Unmarshal([]byte(data), &extensionTables)
+	err := json.Unmarshal([]byte(result), &extensionTables)
 	if err != nil {
-		log.Fatalf("Failed to parse extensions: %v", err)
+		log.Fatalf("Failed to fetch extensions: %v", err)
 	}
 
 	extensions := []*Extension{}
 
 	for _, extensionTable := range extensionTables {
+		// filtering by isDownloaded
+		if options.isDownloadedSet && !(options.isDownloaded == extensionTable.IsDownloaded) {
+			continue
+		}
+
 		extension := getExtension(extensionTable.Name, extensionTable.UserID.String())
 		extension.Id = float32(extensionTable.ID)
+		extension.UserId = extensionTable.UserID.String()
+		extension.Name = extensionTable.Name
+		extension.HasIcon = extensionTable.HasIcon
+		extension.IsPublished = extensionTable.IsPublished
+		extension.IsDownloaded = extensionTable.IsDownloaded
 		extensions = append(extensions, extension)
 	}
 
@@ -288,4 +229,86 @@ func getExtension(id string, userId string) *Extension {
 	extension.Config = configJson
 
 	return extension
+}
+
+func createIcon(file multipart.File, header *multipart.FileHeader, repoPath string, worktree *git.Worktree, extensionTable ExtensionTable) error {
+	// Ensure the target directory exists
+	ICONS_DIR_PATH := path.Join(getUserDirectory(extensionTable.Name, extensionTable.UserID.String()), "icons")
+	fullIconDirPath := path.Join(repoPath, ICONS_DIR_PATH)
+	err := os.MkdirAll(fullIconDirPath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create directory: %v", err)
+	}
+
+	// Extract the file extension from the Content-Type header
+	contentType := header.Header.Get("Content-Type")
+	if contentType == "" {
+		return fmt.Errorf("Content-Type header is missing")
+	}
+
+	fileExt, err := mime.ExtensionsByType(contentType)
+	if err != nil || len(fileExt) == 0 {
+		return fmt.Errorf("failed to determine file extension from Content-Type: %v", err)
+	}
+
+	// Use the first extension from the list
+	fileExtStr := fileExt[0]
+
+	newFilePath := fmt.Sprintf("96x96%s", fileExtStr)
+	// Create the full file path
+	fullFilePath := filepath.Join(fullIconDirPath, newFilePath)
+
+	// Create the destination file
+	destFile, err := os.Create(fullFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer destFile.Close()
+
+	// Copy the file content to the destination
+	_, err = io.Copy(destFile, file)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %v", err)
+	}
+
+	_, err = worktree.Add(".")
+	if err != nil {
+		log.Fatalf("Failed to add icon to repository: %v", err)
+	}
+
+	log.Info("icon added successfully", "icon", newFilePath)
+	return nil
+}
+
+// why do we need userId?
+func updateUserExtensionImage(supabaseClient *supabase.Client, configId string, file multipart.File, header *multipart.FileHeader) {
+	// & retrieve name of from backend
+	var extensionTables []ExtensionTable
+	data, _, err := supabaseClient.From(EXTENSION_TABLE).Select("*", "exact", false).Eq("id", configId).Execute()
+
+	if err != nil {
+		log.Fatalf("Failed to fetch extensions: %v", err)
+	}
+
+	err = json.Unmarshal([]byte(data), &extensionTables)
+	if err != nil {
+		log.Fatalf("Failed to parse extensions: %v", err)
+	}
+
+	userExtensionTable := extensionTables[0]
+
+	// & within repo directory, add icon directory
+	// & 96x96
+	repo, worktree, publicKeys, repoPath := initGitRepo()
+	createIcon(file, header, repoPath, worktree, userExtensionTable)
+
+	msg := fmt.Sprintf("Icon for extension config '%s' for user '%s' created", userExtensionTable.Name, userExtensionTable.UserID)
+	commitChanges(msg, worktree, repo, publicKeys)
+
+	_, _, err = supabaseClient.From(EXTENSION_TABLE).Update(map[string]interface{}{"hasIcon": true}, "exact", "").Eq("id", configId).Execute()
+
+	if err != nil {
+		log.Fatalf("Failed to update hasIcon field: %v", err)
+	}
+
 }
